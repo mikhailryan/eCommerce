@@ -11,6 +11,49 @@ import java.util.Scanner;
 public class ProductsConfig { 
     Config conf = new Config();
     
+    public void configProducts(){
+        Scanner scan = new Scanner(System.in);
+        int opt;
+
+        do {    
+            try {
+                System.out.println("\n\t=== Product Management ===\n");
+                System.out.println("1. View All Products\n2. Add a Product\n3. Delete a Product\n4. Edit a Product\n5. Go back..");
+                System.out.print("\nEnter Option: ");
+                opt = scan.nextInt();
+                scan.nextLine(); 
+
+                switch (opt) {
+                    case 1:
+                             
+                        System.out.println("\n\t\t\t\t    === PRODUCTS LIST ===\n");
+                        viewProducts("SELECT * FROM PRODUCTS");
+                        
+                        break;
+                    case 2:                 
+                        addProduct(scan);
+                        break;
+                    case 3:
+                        deleteProduct(scan);
+                        break;
+                    case 4:
+                        editProduct(scan);
+                        break;
+                    case 5:
+                        System.out.println("\nGoing back to Main Menu...");
+                        
+                        break;
+                    default:
+                        System.out.println("Invalid Option.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scan.nextLine(); 
+                opt = -1; 
+            }
+        } while (opt != 5);
+    }
+    
     public void addProduct(Scanner scan){
         System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
         System.out.println("Enter Product Details:");
@@ -114,49 +157,6 @@ public class ProductsConfig {
             System.out.println("Error: " + e.getMessage());
         }
         
-    }
-    
-    public void configProducts(){
-        Scanner scan = new Scanner(System.in);
-        int opt;
-
-        do {    
-            try {
-                System.out.println("\n\t=== Product Management ===\n");
-                System.out.println("1. View All Products\n2. Add a Product\n3. Delete a Product\n4. Edit a Product\n5. Go back..");
-                System.out.print("\nEnter Option: ");
-                opt = scan.nextInt();
-                scan.nextLine(); 
-
-                switch (opt) {
-                    case 1:
-                             
-                        System.out.println("\n\t\t\t\t    === PRODUCTS LIST ===\n");
-                        viewProducts("SELECT * FROM PRODUCTS");
-                        
-                        break;
-                    case 2:                 
-                        addProduct(scan);
-                        break;
-                    case 3:
-                        deleteProduct(scan);
-                        break;
-                    case 4:
-                        editProduct(scan);
-                        break;
-                    case 5:
-                        System.out.println("\nGoing back to Main Menu...");
-                        
-                        break;
-                    default:
-                        System.out.println("Invalid Option.");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Invalid input. Please enter a valid number.");
-                scan.nextLine(); 
-                opt = -1; 
-            }
-        } while (opt != 5);
-    }
+    }  
 
 }
