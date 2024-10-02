@@ -37,12 +37,10 @@ public class ECommerce {
 
                 switch (opt) {
                     case 1:
-                        System.out.println("------------------------------------------------------------------");
-                        
+                        System.out.println("------------------------------------------------------------------");                       
                         ProductsConfig prod = new ProductsConfig();
-                        prod.products(scan);
-                        break;
-                        
+                        prod.configProducts();   
+                        break; 
                     case 2:
                         System.out.println("------------------------------------------------------------------");
                         break;

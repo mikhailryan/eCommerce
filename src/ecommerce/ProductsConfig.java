@@ -8,67 +8,32 @@ import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class ProductsConfig {
-    String name;
-    double price;
-    int stocks;
-    
-    public void viewProducts(){
-        String sql = "SELECT * FROM PRODUCTS";
-        try {
-            Connection con = connectDB();
-            PreparedStatement pst = con.prepareStatement(sql);
-            ResultSet result = pst.executeQuery();
-            
-            if (!result.isBeforeFirst()) {  
-                System.out.println("The products table is empty."); return;
-            }
-            
-            System.out.println("\n\t\t      === PRODUCTS LIST ===\n");
-            System.out.println("------------------------------------------------------------------");
-            System.out.printf("%-15s %-20s %-20s %-10s\n", "Product ID", "Product Name", "Product Price", "Stocks");
-            System.out.println("------------------------------------------------------------------");
-            while(result.next()){
-                int id = result.getInt("ID");
-                String pname = result.getString("p_name");
-                double pprice = result.getDouble("p_price");
-                int pstocks = result.getInt("p_stocks");
-                
-                System.out.printf("  %-13d   %-18s   %-18s   %-10d\n", id, pname, pprice, pstocks);
-            }
-            System.out.println("------------------------------------------------------------------");
-            
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
-    }
+public class ProductsConfig { 
+    Config conf = new Config();
     
     public void addProduct(Scanner scan){
         System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
         System.out.println("Enter Product Details:");
         
         System.out.print("Product Name: ");
-        this.name = scan.nextLine();
+        String name = scan.nextLine();
         
         System.out.print("Product Price: ");
-        this.price = scan.nextDouble();
+        double price = scan.nextDouble();
         
         System.out.print("Product Stock: ");
-        this.stocks = scan.nextInt();
+        int stocks = scan.nextInt();
                 
         String sql = "INSERT INTO PRODUCTS (p_name, p_price, p_stocks) VALUES (?, ?, ?)";       
-        try {
-            Connection con = connectDB();           
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, name);
-            pst.setDouble(2, price);
-            pst.setInt(3, stocks);
-            pst.executeUpdate();
-            System.out.println("\nProduct Successfully Inserted");
-            
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        
+        conf.addRecord(sql, name, price, stocks);
+    }
+    
+    public void viewProducts(String query) {     
+        String[] productsHeaders = {"Product ID", "Product Name", "Price", "Stocks"};
+        String[] productsColumns = {"ID", "p_name", "p_price", "p_stocks"};
+
+        conf.viewRecords(query, productsHeaders, productsColumns);
     }
     
     public void deleteProduct(Scanner scan){
@@ -122,12 +87,11 @@ public class ProductsConfig {
             double pprice = rs.getDouble("p_price");
             int pstocks = rs.getInt("p_stocks");
             
-            System.out.println("\n Selected  Product");
-            System.out.printf("%-15s %-20s %-20s %-10s\n", "Product ID", "Product Name", "Product Price", "Stocks");
-            System.out.println("------------------------------------------------------------------");
-            System.out.printf("  %-13d   %-18s   %-18s   %-10d\n", pid, pname, pprice, pstocks);
-            System.out.println("------------------------------------------------------------------");
+            System.out.println("Selected  Product");
             
+            String query = "SELECT * FROM PRODUCTS WHERE ID = " + id;
+            viewProducts(query);
+
             System.out.print("Enter new Product Name: ");
             String newName = scan.nextLine();
             
@@ -152,7 +116,8 @@ public class ProductsConfig {
         
     }
     
-    public void products(Scanner scan){
+    public void configProducts(){
+        Scanner scan = new Scanner(System.in);
         int opt;
 
         do {    
@@ -165,29 +130,23 @@ public class ProductsConfig {
 
                 switch (opt) {
                     case 1:
-                        System.out.println("------------------------------------------------------------------");
-                        viewProducts();
-                        System.out.println("\n------------------------------------------------------------------");
+                             
+                        System.out.println("\n\t\t\t\t    === PRODUCTS LIST ===\n");
+                        viewProducts("SELECT * FROM PRODUCTS");
+                        
                         break;
-                    case 2:
-                        System.out.println("------------------------------------------------------------------");
+                    case 2:                 
                         addProduct(scan);
-                        System.out.println("\n------------------------------------------------------------------");
                         break;
                     case 3:
-                        System.out.println("------------------------------------------------------------------");
                         deleteProduct(scan);
-                        System.out.println("\n------------------------------------------------------------------");
                         break;
                     case 4:
-                        System.out.println("------------------------------------------------------------------");
                         editProduct(scan);
-                        System.out.println("\n------------------------------------------------------------------");
-                        break;           
-                        
+                        break;
                     case 5:
                         System.out.println("\nGoing back to Main Menu...");
-                        System.out.println("------------------------------------------------------------------");
+                        
                         break;
                     default:
                         System.out.println("Invalid Option.");
