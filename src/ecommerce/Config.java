@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 public class Config {
     public static Connection connectDB() {
@@ -30,22 +32,25 @@ public class Config {
         }
 
         try (Connection conn = Config.connectDB();
-             PreparedStatement pstmt = conn.prepareStatement(sqlQuery);
-             ResultSet rs = pstmt.executeQuery()) { 
+            PreparedStatement pstmt = conn.prepareStatement(sqlQuery);
+            ResultSet rs = pstmt.executeQuery()) { 
            
             StringBuilder headerLine = new StringBuilder();
             
-            for (int i = 0; i < (columnHeaders.length * 20); i++) {
+            int spacing = 20;
+            int lineLength = columnHeaders.length * (spacing + 3) + 1;
+            
+            for (int i = 0; i < lineLength; i++) {
                  headerLine.append("-");
             }
             headerLine.append("\n| ");
 
             for (String header : columnHeaders) {
-                headerLine.append(String.format("%-20s | ", header));
+                headerLine.append(String.format("%-" + spacing + "s | ", header));
             }
             
             headerLine.append("\n");
-            for (int i = 0; i < (columnHeaders.length * 20); i++) {
+            for (int i = 0; i < lineLength; i++) {
                  headerLine.append("-");
             }
 
@@ -55,17 +60,17 @@ public class Config {
                 StringBuilder row = new StringBuilder("| ");
                 for (String colName : columnNames) {
                     String value = rs.getString(colName);
-                    row.append(String.format("%-20s | ", value != null ? value : "")); 
+                    row.append(String.format("%-" + spacing + "s | ", value != null ? value : "")); 
                 }
                 System.out.println(row.toString());
             }
-            
-            for (int i = 0; i < (columnHeaders.length * 20); i++) {
-                 headerLine.append("-");
+            for (int i = 0; i < lineLength; i++) {
+                 System.out.print("-");
             }
+            System.out.println("");
             
         } catch (SQLException e) {
-            System.out.println("Error retrieving records: " + e.getMessage());
+            System.out.println("Error retrieving records: " + e.getMessage());  
         }
     }
     
@@ -101,5 +106,72 @@ public class Config {
         } catch (SQLException e) {
             System.out.println("Error adding record: " + e.getMessage());
         }
+    }
+    
+    public void updateRecord(String table, String[] columnHeaders, String[] columnNames, int id){
+        Scanner scan = new Scanner(System.in);
+        StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
+        
+        for (int i = 0; i < columnNames.length; i++) {
+            sql.append(columnNames[i]);
+            sql.append(" = ?");
+            if (i < columnNames.length - 1) {
+                sql.append(", ");
+            }
+        }
+        sql.append(" WHERE ID = ").append(id);
+        
+        String findID = "SELECT * FROM " + table + " WHERE ID = " + id;
+        
+        try (Connection con = connectDB();
+            PreparedStatement pst = con.prepareStatement(findID);
+            ResultSet rs = pst.executeQuery();) {    
+
+            ResultSetMetaData metaData = rs.getMetaData(); 
+            PreparedStatement updPst = con.prepareStatement(sql.toString());
+
+            for (int i = 0; i < columnNames.length; i++) {
+                System.out.print("Enter new " + columnHeaders[i] + ": ");  
+
+                int dataType = metaData.getColumnType(i + 2);  
+
+                switch (dataType) {
+                    case java.sql.Types.INTEGER:
+                        System.out.println("int");
+                        int intValue = scan.nextInt();
+                        scan.nextLine(); 
+                        updPst.setInt(i + 1, intValue);
+                        
+                        break;
+                    case java.sql.Types.REAL:
+                        System.out.println("double");
+                        double doubleValue = scan.nextDouble();
+                        scan.nextLine();
+                        updPst.setDouble(i + 1, doubleValue);
+                        
+                        break;      
+                    case java.sql.Types.BOOLEAN:
+                        
+                        boolean boolValue = scan.nextBoolean();
+                        scan.nextLine();
+                        updPst.setBoolean(i + 1, boolValue);
+                        
+                        break;      
+                    default:
+                        System.out.println("string");
+                        String stringValue = scan.nextLine();
+                        updPst.setString(i + 1, stringValue);
+                        
+                        break;
+                }
+            }
+            
+            updPst.executeUpdate();
+            System.out.println("\nRecord was edited successfully!");
+
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
     }
 }

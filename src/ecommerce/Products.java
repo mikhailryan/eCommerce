@@ -1,6 +1,6 @@
 package ecommerce;
 
-import static ecommerce.ECommerce.connectDB;
+import static ecommerce.Config.connectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class ProductsConfig { 
+public class Products { 
     Config conf = new Config();
     
     public void configProducts(){
@@ -26,17 +26,20 @@ public class ProductsConfig {
                 switch (opt) {
                     case 1:
                              
-                        System.out.println("\n\t\t\t\t    === PRODUCTS LIST ===\n");
+                        System.out.println("\n\t\t\t\t   === PRODUCTS LIST ===\n");
                         viewProducts("SELECT * FROM PRODUCTS");
                         
                         break;
-                    case 2:                 
+                    case 2:              
+                        System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
                         addProduct(scan);
                         break;
                     case 3:
+                        System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
                         deleteProduct(scan);
                         break;
                     case 4:
+                        System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
                         editProduct(scan);
                         break;
                     case 5:
@@ -55,7 +58,7 @@ public class ProductsConfig {
     }
     
     public void addProduct(Scanner scan){
-        System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
+        
         System.out.println("Enter Product Details:");
         
         System.out.print("Product Name: ");
@@ -80,7 +83,6 @@ public class ProductsConfig {
     }
     
     public void deleteProduct(Scanner scan){
-        System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
         
         System.out.print("Product ID you want to delete: ");
         int id = scan.nextInt();
@@ -104,59 +106,34 @@ public class ProductsConfig {
     }
     
     public void editProduct(Scanner scan){
-        System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
         
-        String findID = "SELECT * FROM PRODUCTS WHERE ID = ?";
-        String sql = "UPDATE PRODUCTS SET p_name = ?, p_price = ?, p_stocks = ? WHERE ID = ?";
-        
-        System.out.print("Product ID you want to Edit: ");
+        System.out.print("Enter ID you want to edit: ");
         int id = scan.nextInt();
-        scan.nextLine();
-        
-        try {
-            Connection con = connectDB();
-            
+
+        String findID = "SELECT * FROM PRODUCTS WHERE ID = " + id;
+
+        try (Connection con = connectDB();
             PreparedStatement findIDpst = con.prepareStatement(findID);
-            findIDpst.setInt(1, id);
-            ResultSet rs = findIDpst.executeQuery();
-            
-            if(!rs.next()){
-                System.out.println("Product with ID " + id + " Doesn't Exist.");
+            ResultSet rs = findIDpst.executeQuery();){
+
+            if (!rs.next()) {
+                System.out.println("Product with ID: " + id + " doesn't exist.");
                 return;
             }
-            
-            int pid = rs.getInt("ID");
-            String pname = rs.getString("p_name");
-            double pprice = rs.getDouble("p_price");
-            int pstocks = rs.getInt("p_stocks");
-            
-            System.out.println("Selected  Product");
-            
+
+            System.out.println("\nSelected  Product");               
             String query = "SELECT * FROM PRODUCTS WHERE ID = " + id;
             viewProducts(query);
+            
+            System.out.println("");
 
-            System.out.print("Enter new Product Name: ");
-            String newName = scan.nextLine();
-            
-            System.out.print("Enter new Product Price: ");
-            double newPrice = scan.nextDouble();
-            
-            System.out.print("Enter new Stocks: ");
-            int newStocks = scan.nextInt();
-            
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, newName);
-            pst.setDouble(2, newPrice);
-            pst.setInt(3, newStocks);
-            pst.setInt(4, id);
-            pst.executeUpdate();
-            
-            System.out.println("\nProduct was Edited Successfully!");
-            
-        } catch (SQLException e) {
+        }catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
-        
-    }  
 
+        String[] columnHeaders = {"Product Name", "Price", "Stocks"};
+        String[] columnNames = {"p_name", "p_price", "p_stocks"};
+
+        conf.updateRecord("PRODUCTS", columnHeaders, columnNames, id);       
+    }  
 }
