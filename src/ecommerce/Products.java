@@ -18,7 +18,12 @@ public class Products {
         do {    
             try {
                 System.out.println("\n\t=== Product Management ===\n");
-                System.out.println("1. View All Products\n2. Add a Product\n3. Delete a Product\n4. Edit a Product\n5. Go back..");
+                System.out.println("1. View All Products");
+                System.out.println("2. Add a Product");
+                System.out.println("3. Delete a Product");
+                System.out.println("4. Edit a Product");
+                System.out.println("5. Go back..");
+                
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
                 scan.nextLine(); 
@@ -44,7 +49,7 @@ public class Products {
                         break;
                     case 5:
                         System.out.println("\nGoing back to Main Menu...");
-                        
+                        System.out.println("------------------------------------------------------------------");         
                         break;
                     default:
                         System.out.println("Invalid Option.");
@@ -87,22 +92,7 @@ public class Products {
         System.out.print("Product ID you want to delete: ");
         int id = scan.nextInt();
         
-        String sql = "DELETE FROM PRODUCTS WHERE ID = ?";
-        try {
-            Connection con = connectDB();
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, id);
-            int success = pst.executeUpdate();
-            
-            if(success > 0){
-                System.out.println("\nProduct Successfully Deleted.");
-            }else{
-                System.out.println("\nNo Product Found with ID: " + id);
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error retrieving data: " + e.getMessage());
-        }
+        conf.deleteRecord("products", id);
     }
     
     public void editProduct(Scanner scan){

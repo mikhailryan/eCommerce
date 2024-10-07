@@ -11,12 +11,17 @@ public class ECommerce {
         do {    
             try {
                 System.out.println("\n\t=== eCommerce Management System ===\n");
-                System.out.println("1. Products\n2. Orders\n3. View All Customers\n4. Generate Reports\n5. Exit");
+                System.out.println("1. Products");
+                System.out.println("2. Orders");
+                System.out.println("3. View All Customers");
+                System.out.println("4. Generate Reports");
+                System.out.println("5. Exit");
+                
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
                 scan.nextLine();
                 System.out.println("");
-
+                
                 switch (opt) {
                     case 1:
                         System.out.println("------------------------------------------------------------------");                       
@@ -24,7 +29,9 @@ public class ECommerce {
                         prod.configProducts();   
                         break; 
                     case 2:
-                        System.out.println("------------------------------------------------------------------");
+                        System.out.println("------------------------------------------------------------------");   
+                        Orders ord = new Orders();
+                        ord.configOrders();
                         break;
                     case 3:
                         System.out.println("------------------------------------------------------------------");

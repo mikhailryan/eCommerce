@@ -132,36 +132,49 @@ public class Config {
 
             for (int i = 0; i < columnNames.length; i++) {
                 System.out.print("Enter new " + columnHeaders[i] + ": ");  
-
+                
+                String oldValue = rs.getString(columnNames[i]);
                 int dataType = metaData.getColumnType(i + 2);  
 
                 switch (dataType) {
-                    case java.sql.Types.INTEGER:
-                        System.out.println("int");
-                        int intValue = scan.nextInt();
-                        scan.nextLine(); 
-                        updPst.setInt(i + 1, intValue);
+                    case java.sql.Types.INTEGER:       
                         
+                        String intValue = scan.nextLine();  
+                        
+                        if (intValue.equalsIgnoreCase("keep")){
+                            intValue = oldValue;
+                        }                      
+                        updPst.setInt(i + 1, Integer.valueOf(intValue));                     
                         break;
-                    case java.sql.Types.REAL:
-                        System.out.println("double");
-                        double doubleValue = scan.nextDouble();
-                        scan.nextLine();
-                        updPst.setDouble(i + 1, doubleValue);
                         
+                    case java.sql.Types.REAL:
+                        
+                        String doubleValue = scan.nextLine();  
+                        
+                        if (doubleValue.equalsIgnoreCase("keep")){
+                            doubleValue = oldValue;
+                        }
+                        updPst.setDouble(i + 1, Double.valueOf(doubleValue));
                         break;      
+                        
                     case java.sql.Types.BOOLEAN:
                         
-                        boolean boolValue = scan.nextBoolean();
-                        scan.nextLine();
-                        updPst.setBoolean(i + 1, boolValue);
+                        String boolValue = scan.nextLine(); 
                         
+                        if (boolValue.equalsIgnoreCase("keep")){
+                            boolValue = oldValue;
+                        }
+                        updPst.setBoolean(i + 1, Boolean.parseBoolean(boolValue));
                         break;      
-                    default:
-                        System.out.println("string");
-                        String stringValue = scan.nextLine();
-                        updPst.setString(i + 1, stringValue);
                         
+                    default:
+                        
+                        String stringValue = scan.nextLine();
+                        
+                        if (stringValue.equalsIgnoreCase("keep")){
+                            stringValue = oldValue;
+                        }
+                        updPst.setString(i + 1, stringValue);
                         break;
                 }
             }
@@ -173,5 +186,25 @@ public class Config {
             System.out.println("Error: " + e.getMessage());
         }
 
+    }
+    
+    public void deleteRecord(String table, int id){
+        String sql = "DELETE FROM " + table + " WHERE id = ?";
+        
+        try {
+            Connection con = connectDB();
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, id);
+            int success = pst.executeUpdate();
+
+            if(success > 0){
+                System.out.println("\nRecord Successfully Deleted.");
+            }else{
+                System.out.println("\nNo Record Found with ID: " + id);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }
