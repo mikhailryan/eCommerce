@@ -29,11 +29,9 @@ public class Products {
                 scan.nextLine(); 
 
                 switch (opt) {
-                    case 1:
-                             
+                    case 1:  
                         System.out.println("\n\t\t\t\t   === PRODUCTS LIST ===\n");
                         viewProducts("SELECT * FROM PRODUCTS");
-                        
                         break;
                     case 2:              
                         System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
@@ -98,28 +96,7 @@ public class Products {
     public void editProduct(Scanner scan){
         
         System.out.print("Enter ID you want to edit: ");
-        int id = scan.nextInt();
-
-        String findID = "SELECT * FROM PRODUCTS WHERE ID = " + id;
-
-        try (Connection con = connectDB();
-            PreparedStatement findIDpst = con.prepareStatement(findID);
-            ResultSet rs = findIDpst.executeQuery();){
-
-            if (!rs.next()) {
-                System.out.println("Product with ID: " + id + " doesn't exist.");
-                return;
-            }
-
-            System.out.println("\nSelected  Product");               
-            String query = "SELECT * FROM PRODUCTS WHERE ID = " + id;
-            viewProducts(query);
-            
-            System.out.println("");
-
-        }catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        int id = scan.nextInt();      
 
         String[] columnHeaders = {"Product Name", "Price", "Stocks"};
         String[] columnNames = {"p_name", "p_price", "p_stocks"};

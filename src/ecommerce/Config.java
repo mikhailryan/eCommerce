@@ -126,6 +126,16 @@ public class Config {
         try (Connection con = connectDB();
             PreparedStatement pst = con.prepareStatement(findID);
             ResultSet rs = pst.executeQuery();) {    
+            
+            if (!rs.next()) {
+                System.out.println("Product with ID: " + id + " doesn't exist.");
+                return;
+            }
+            
+            System.out.println("");
+            System.out.println("Selected Record ID: " + id);
+            viewRecords(findID, columnHeaders, columnNames);
+            System.out.println("");
 
             ResultSetMetaData metaData = rs.getMetaData(); 
             PreparedStatement updPst = con.prepareStatement(sql.toString());
