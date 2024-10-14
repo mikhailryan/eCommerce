@@ -5,7 +5,12 @@ import java.util.Scanner;
 
 public class ECommerce {
     public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);       
+        Scanner scan = new Scanner(System.in);    
+        Config conf = new Config();
+        
+        Products prod = new Products();
+        Orders ord = new Orders();
+        Customers cus = new Customers();
         
         int opt;
         do {    
@@ -13,7 +18,7 @@ public class ECommerce {
                 System.out.println("\n\t=== eCommerce Management System ===\n");
                 System.out.println("1. Products");
                 System.out.println("2. Orders");
-                System.out.println("3. View All Customers");
+                System.out.println("3. Customers");
                 System.out.println("4. Generate Reports");
                 System.out.println("5. Exit");
                 
@@ -24,17 +29,16 @@ public class ECommerce {
                 
                 switch (opt) {
                     case 1:
-                        System.out.println("------------------------------------------------------------------");                       
-                        Products prod = new Products();
+                        System.out.println("------------------------------------------------------------------");
                         prod.configProducts();   
                         break; 
                     case 2:
-                        System.out.println("------------------------------------------------------------------");   
-                        Orders ord = new Orders();
+                        System.out.println("------------------------------------------------------------------");
                         ord.configOrders();
                         break;
                     case 3:
                         System.out.println("------------------------------------------------------------------");
+                        cus.configCustomers();
                         break;
                     case 4:
                         System.out.println("------------------------------------------------------------------");

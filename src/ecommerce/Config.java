@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Scanner;
 
 public class Config {
     public static Connection connectDB() {
@@ -23,21 +22,20 @@ public class Config {
         return con;
     }
     
-    // Dynamic view method to display records from any table
     public void viewRecords(String sqlQuery, String[] columnHeaders, String[] columnNames) {
         
         if (columnHeaders.length != columnNames.length) {
             System.out.println("Error: Mismatch between column headers and column names.");
             return;
         }
-
+        
         try (Connection conn = Config.connectDB();
             PreparedStatement pstmt = conn.prepareStatement(sqlQuery);
-            ResultSet rs = pstmt.executeQuery()) { 
+            ResultSet rs = pstmt.executeQuery();) {
            
             StringBuilder headerLine = new StringBuilder();
             
-            int spacing = 20;
+            int spacing = 23;
             int lineLength = columnHeaders.length * (spacing + 3) + 1;
             
             for (int i = 0; i < lineLength; i++) {
@@ -74,9 +72,9 @@ public class Config {
         }
     }
     
-    public void addRecord(String sql, Object... values) {
+    public void addRecord(String sql, boolean print, Object... values) {
         try (Connection conn = Config.connectDB(); // Use the connectDB method
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql);) {
 
             // Loop through the values and set them in the prepared statement dynamically
             for (int i = 0; i < values.length; i++) {
@@ -102,119 +100,148 @@ public class Config {
             }
 
             pstmt.executeUpdate();
-            System.out.println("Record added successfully!");
+            if(print){
+                System.out.println("Record added successfully!");
+            }
         } catch (SQLException e) {
             System.out.println("Error adding record: " + e.getMessage());
         }
     }
     
-    public void updateRecord(String table, String[] columnHeaders, String[] columnNames, int id){
-        Scanner scan = new Scanner(System.in);
-        StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
-        
-        for (int i = 0; i < columnNames.length; i++) {
-            sql.append(columnNames[i]);
-            sql.append(" = ?");
-            if (i < columnNames.length - 1) {
-                sql.append(", ");
-            }
-        }
-        sql.append(" WHERE ID = ").append(id);
-        
-        String findID = "SELECT * FROM " + table + " WHERE ID = " + id;
-        
+    public void updateRecord(String updateSql, String selectIdSql, String[] columnNames, Object... values) {
         try (Connection con = connectDB();
-            PreparedStatement pst = con.prepareStatement(findID);
-            ResultSet rs = pst.executeQuery();) {    
-            
-            if (!rs.next()) {
-                System.out.println("Product with ID: " + id + " doesn't exist.");
-                return;
-            }
-            
-            System.out.println("");
-            System.out.println("Selected Record ID: " + id);
-            viewRecords(findID, columnHeaders, columnNames);
-            System.out.println("");
+            PreparedStatement pst = con.prepareStatement(selectIdSql);
+            ResultSet rs = pst.executeQuery();) {
 
             ResultSetMetaData metaData = rs.getMetaData(); 
-            PreparedStatement updPst = con.prepareStatement(sql.toString());
+            PreparedStatement pstmt = con.prepareStatement(updateSql);
 
-            for (int i = 0; i < columnNames.length; i++) {
-                System.out.print("Enter new " + columnHeaders[i] + ": ");  
+            // Loop through the values and set them in the prepared statement dynamically
+            for (int i = 0; i < values.length; i++) {
                 
-                String oldValue = rs.getString(columnNames[i]);
-                int dataType = metaData.getColumnType(i + 2);  
+                Object newValue = values[i];
 
-                switch (dataType) {
-                    case java.sql.Types.INTEGER:       
-                        
-                        String intValue = scan.nextLine();  
-                        
-                        if (intValue.equalsIgnoreCase("keep")){
-                            intValue = oldValue;
-                        }                      
-                        updPst.setInt(i + 1, Integer.valueOf(intValue));                     
-                        break;
-                        
-                    case java.sql.Types.REAL:
-                        
-                        String doubleValue = scan.nextLine();  
-                        
-                        if (doubleValue.equalsIgnoreCase("keep")){
-                            doubleValue = oldValue;
-                        }
-                        updPst.setDouble(i + 1, Double.valueOf(doubleValue));
-                        break;      
-                        
-                    case java.sql.Types.BOOLEAN:
-                        
-                        String boolValue = scan.nextLine(); 
-                        
-                        if (boolValue.equalsIgnoreCase("keep")){
-                            boolValue = oldValue;
-                        }
-                        updPst.setBoolean(i + 1, Boolean.parseBoolean(boolValue));
-                        break;      
-                        
-                    default:
-                        
-                        String stringValue = scan.nextLine();
-                        
-                        if (stringValue.equalsIgnoreCase("keep")){
-                            stringValue = oldValue;
-                        }
-                        updPst.setString(i + 1, stringValue);
-                        break;
+                // If the input is "keep", retrieve the old value from the ResultSet
+                if (newValue instanceof String && newValue.equals("keep")) {
+                    int columnType = metaData.getColumnType(i + 2); 
+                    switch (columnType) {
+                        case java.sql.Types.INTEGER:
+                            newValue = rs.getInt(columnNames[i]);
+                            break;
+                        case java.sql.Types.REAL:
+                            newValue = rs.getDouble(columnNames[i]);
+                            break;
+                        default:
+                            newValue = rs.getString(columnNames[i]);
+                            break;
+                    }
+                }
+                    
+                if (newValue instanceof Integer) {
+                pstmt.setInt(i + 1, (Integer) newValue);
+                } else if (newValue instanceof Double) {
+                    pstmt.setDouble(i + 1, (Double) newValue);
+                } else if (newValue instanceof Float) {
+                    pstmt.setFloat(i + 1, (Float) newValue);
+                } else if (newValue instanceof Long) {
+                    pstmt.setLong(i + 1, (Long) newValue);
+                } else if (newValue instanceof Boolean) {
+                    pstmt.setBoolean(i + 1, (Boolean) newValue);
+                } else if (newValue instanceof java.util.Date) {
+                    pstmt.setDate(i + 1, new java.sql.Date(((java.util.Date) newValue).getTime()));
+                } else if (newValue instanceof java.sql.Date) {
+                    pstmt.setDate(i + 1, (java.sql.Date) newValue);
+                } else if (newValue instanceof java.sql.Timestamp) {
+                    pstmt.setTimestamp(i + 1, (java.sql.Timestamp) newValue);
+                } else {
+                    pstmt.setString(i + 1, newValue.toString());
                 }
             }
+
+            pstmt.executeUpdate();
+            System.out.println("Record updated successfully!");
             
-            updPst.executeUpdate();
-            System.out.println("\nRecord was edited successfully!");
-
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("Error updating record: " + e.getMessage());
         }
-
     }
     
-    public void deleteRecord(String table, int id){
-        String sql = "DELETE FROM " + table + " WHERE id = ?";
+    public void deleteRecord(String table, int id, boolean print){
+        String sql = "DELETE FROM " + table + " WHERE ID = ?";
         
         try {
             Connection con = connectDB();
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, id);
             int success = pst.executeUpdate();
-
-            if(success > 0){
-                System.out.println("\nRecord Successfully Deleted.");
-            }else{
-                System.out.println("\nNo Record Found with ID: " + id);
+            
+            if (print){
+                if(success > 0){
+                    System.out.println("\nRecord Successfully Deleted.");
+                }else{
+                    System.out.println("\nNo Record Found with ID: " + id);
+                }
             }
+            
 
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
+    }
+    
+    public boolean doesIDExist(String table, int id){
+        
+        String findID = "SELECT * FROM " + table + " WHERE ID = ?";
+        
+        try (Connection con = connectDB();
+            PreparedStatement pst = con.prepareStatement(findID)){
+            
+            pst.setInt(1, id);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()){
+                    return true;
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        
+        return false;
+    }
+    
+    public String getDataFromID(String table, int id, String column){
+        String findID = "SELECT " + column + " FROM " + table + " WHERE ID = ?";
+        String data = "";
+        
+        try (Connection con = connectDB();      
+            PreparedStatement pst = con.prepareStatement(findID)){
+            
+            pst.setInt(1, id);
+            try (ResultSet rs = pst.executeQuery()) {
+                data = rs.getString(column);
+            }
+                               
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        
+        return data;
+    }
+    
+    public int getID(String sql){
+        int id = 0;
+        try (Connection con = connectDB();
+            PreparedStatement pst = con.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery()){
+            
+            id = rs.getInt("ID"); 
+            rs.close();
+            
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        
+        return id;
     }
 }

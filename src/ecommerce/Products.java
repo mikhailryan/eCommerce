@@ -1,10 +1,5 @@
 package ecommerce;
 
-import static ecommerce.Config.connectDB;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -75,7 +70,7 @@ public class Products {
                 
         String sql = "INSERT INTO PRODUCTS (p_name, p_price, p_stocks) VALUES (?, ?, ?)";       
         
-        conf.addRecord(sql, name, price, stocks);
+        conf.addRecord(sql, true, name, price, stocks);
     }
     
     public void viewProducts(String query) {     
@@ -90,17 +85,57 @@ public class Products {
         System.out.print("Product ID you want to delete: ");
         int id = scan.nextInt();
         
-        conf.deleteRecord("products", id);
+        conf.deleteRecord("PRODUCTS", id, true);
     }
     
     public void editProduct(Scanner scan){
         
-        System.out.print("Enter ID you want to edit: ");
-        int id = scan.nextInt();      
-
-        String[] columnHeaders = {"Product Name", "Price", "Stocks"};
+        int id;        
+        boolean idExists;
+        do{
+            System.out.print("Product ID you want to delete: ");
+            id = scan.nextInt();
+            
+            idExists = conf.doesIDExist("PRODUCTS", id);
+            if(!idExists){
+                System.out.println("Product ID Doesn't Exist.\n");
+            }
+        }while(!idExists);
+        scan.nextLine();
+        
+        System.out.println("\nSelected Product:");
+        viewProducts("SELECT * FROM PRODUCTS WHERE ID = " + id);
+        
+        System.out.println("\nEnter Product Details:");
+        System.out.print("New Product Name: ");
+        String name = scan.nextLine();
+        
+        Object price = null;
+        Object stocks = null;
+        try {
+            System.out.print("New Price: ");
+            String tempPrice = scan.nextLine();
+            if(!tempPrice.equalsIgnoreCase("keep")){
+                price = Double.parseDouble(tempPrice);
+            }
+            
+            System.out.print("New Stocks: ");
+            String tempStocks = scan.nextLine();
+            if(!tempStocks.equalsIgnoreCase("keep")){
+                stocks = Integer.parseInt(tempStocks);
+            }
+            
+        }catch (NumberFormatException  e){
+            System.out.println("Error: " + e.getMessage());
+        }
+        System.out.println("");
+        
         String[] columnNames = {"p_name", "p_price", "p_stocks"};
-
-        conf.updateRecord("PRODUCTS", columnHeaders, columnNames, id);       
+        String updateSql = "UPDATE PRODUCTS SET p_name = ?, p_price = ?, p_stocks = ? WHERE id = ?";
+        String selectIdSql = "SELECT * FROM PRODUCTS WHERE ID = " + id;
+        conf.updateRecord(updateSql, selectIdSql, columnNames, name,
+                price != null ? price : "keep",
+                stocks != null ? stocks : "keep", id);    
+        
     }  
 }
