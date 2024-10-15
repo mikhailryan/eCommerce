@@ -25,20 +25,32 @@ public class Products {
 
                 switch (opt) {
                     case 1:  
-                        System.out.println("\n\t\t\t\t   === PRODUCTS LIST ===\n");
-                        viewProducts("SELECT * FROM PRODUCTS");
+                        if (!conf.isTableEmpty("PRODUCTS")){
+                            System.out.println("\n\t\t\t\t   === PRODUCTS LIST ===\n");
+                            viewProducts("SELECT * FROM PRODUCTS");
+                        }else{
+                            System.out.println("Products Table is Empty.");
+                        }
                         break;
                     case 2:              
                         System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
                         addProduct(scan);
                         break;
                     case 3:
-                        System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
-                        deleteProduct(scan);
+                        if (!conf.isTableEmpty("PRODUCTS")){
+                            System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
+                            deleteProduct(scan);    
+                        }else{
+                            System.out.println("Products Table is Empty.");
+                        }
                         break;
                     case 4:
-                        System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
-                        editProduct(scan);
+                        if (!conf.isTableEmpty("PRODUCTS")){
+                            System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
+                            editProduct(scan);
+                        }else{
+                            System.out.println("Products Table is Empty.");
+                        }
                         break;
                     case 5:
                         System.out.println("\nGoing back to Main Menu...");

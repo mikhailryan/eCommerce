@@ -19,7 +19,7 @@ public class ECommerce {
                 System.out.println("1. Products");
                 System.out.println("2. Orders");
                 System.out.println("3. Customers");
-                System.out.println("4. Generate Reports");
+                System.out.println("4. Generate Receipts");
                 System.out.println("5. Exit");
                 
                 System.out.print("\nEnter Option: ");

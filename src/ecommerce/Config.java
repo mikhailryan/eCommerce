@@ -244,4 +244,23 @@ public class Config {
         
         return id;
     }
+    
+    public boolean isTableEmpty(String tableName) {
+        String sql = "SELECT COUNT(*) FROM " + tableName;
+        
+        try (Connection con = connectDB();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+
+            if (rs.next()) {
+                int rowCount = rs.getInt(1);  
+                return rowCount == 0;         
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        
+        return true;  
+    }
 }

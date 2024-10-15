@@ -1,9 +1,10 @@
 package ecommerce;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class Orders {
@@ -32,18 +33,30 @@ public class Orders {
                         placeOrder();
                         break;
                     case 2:
-                        System.out.println("\n\t\t\t\t     === Orders List ===\n");
-                        String query = "SELECT * FROM ORDERS";
-                        viewOrders(query);
-                        viewOrderDetails();
+                        if (!conf.isTableEmpty("ORDERS")){
+                            System.out.println("\n\t\t\t\t     === Orders List ===\n");
+                            String query = "SELECT * FROM ORDERS";
+                            viewOrders(query);
+                            viewOrderDetails();
+                        }else{
+                            System.out.println("Orders Table is Empty.");
+                        }
                         break;
                     case 3:
-                        System.out.println("\n\t\t=== Cancel Order ===\n");
-                        cancelOrder();
+                        if (!conf.isTableEmpty("ORDERS")){
+                            System.out.println("\n\t\t=== Cancel Order ===\n");
+                            cancelOrder();
+                        }else{
+                            System.out.println("Orders Table is Empty.");
+                        }
                         break;
                     case 4:
-                        System.out.println("\n\t\t=== Update Order ===\n");
-                        updateOrder();
+                        if (!conf.isTableEmpty("ORDERS")){
+                            System.out.println("\n\t\t=== Update Order ===\n");
+                            updateOrder();
+                        }else{
+                            System.out.println("Orders Table is Empty.");
+                        }
                         break;
                     case 5:
                         System.out.println("\nGoing back to Main Menu...");
@@ -81,10 +94,11 @@ public class Orders {
         
         String resp;
         double total = 0;
-        ArrayList<int[]> orderDetails = new ArrayList<>();
+        ArrayList<Object> orderDetails = new ArrayList<>();
          
         do {
             try {
+                
                 resp = "";
                 System.out.print("\nID of Ordered Product (or type 'done' to finish): ");
                 resp = scan.next();
@@ -97,8 +111,6 @@ public class Orders {
                     System.out.println("Product ID doesn't exist.");
                     continue;
                 }
-                
-                double price = Double.parseDouble(conf.getDataFromID("PRODUCTS", productId, "p_price"));
                 
                 int qty = 0;
                 boolean validQuantity = false;  
@@ -113,8 +125,11 @@ public class Orders {
                     }
                 }
                 
+                double price = Double.parseDouble(conf.getDataFromID("PRODUCTS", productId, "p_price"));
                 total += price * qty;
-                orderDetails.add(new int[]{productId, qty});
+                double lineTotal = price * qty;
+                
+                orderDetails.add(new Object[]{productId, qty, lineTotal});
 
             } catch (InputMismatchException e) {
                 System.out.println("Error: Please enter a valid number for quantity.");
@@ -128,9 +143,10 @@ public class Orders {
         conf.addRecord(addOrderSql, false, cusId, dateToday(), total);    
         
         int orderId = conf.getID("SELECT * FROM ORDERS WHERE ROWID = (SELECT MAX(ROWID) FROM ORDERS);");
-        String addDetailsSql = "INSERT INTO ORDERDETAILS (ID, prod_id, quantity) VALUES (?, ?, ?)";
-        orderDetails.forEach((order) -> {
-            conf.addRecord(addDetailsSql, false, orderId, order[0], order[1]);
+        String addDetailsSql = "INSERT INTO ORDERDETAILS (ID, prod_id, quantity, line_total) VALUES (?, ?, ?, ?)";
+       
+        orderDetails.stream().map((item) -> (Object[]) item).forEachOrdered((order) -> {
+            conf.addRecord(addDetailsSql, false, orderId, (int)order[0], (int)order[1], (double)order[2]);
         });
         
         System.out.println("\nOrder Placed Successfully.");
@@ -168,19 +184,16 @@ public class Orders {
         
         int cusID = Integer.parseInt(conf.getDataFromID("ORDERS", id, "customer_id"));
         
+        System.out.println("");
         System.out.println("Customer Name: " + conf.getDataFromID("CUSTOMERS", cusID, "name"));
         System.out.println("Email: " + conf.getDataFromID("CUSTOMERS", cusID, "email"));
         System.out.println("Address: " + conf.getDataFromID("CUSTOMERS", cusID, "address") + "\n");
+        System.out.println("");
         
         String sql = "SELECT * FROM ORDERDETAILS WHERE id = " + id;
-        String columnHeaders[] = {"Product ID", "Quantity"};
-        String columnNames[] = {"prod_id", "quantity"};
+        String columnHeaders[] = {"Product ID", "Quantity", "Line Total"};
+        String columnNames[] = {"prod_id", "quantity", "line_total"};
         conf.viewRecords(sql, columnHeaders, columnNames);
-    }
-    
-    public String dateToday(){       
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("MM-dd-yyyy");       
-        return LocalDate.now().format(format);
     }
 
     private void cancelOrder() {
@@ -192,6 +205,14 @@ public class Orders {
     }
  
     private void updateOrder() {
-        
+        String sql = "UPDATE ORDERS SET order_date = ? WHERE ID = 5";
+        String selectIdSql = "SELECT * FROM PRODUCTS WHERE ID = 5";
+        String[] columnNames = {"order_date"};
+        conf.updateRecord(sql, selectIdSql, columnNames, dateToday());
+    }
+    
+    public String dateToday(){       
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a");       
+        return LocalDateTime.now().format(format);
     }
 }
