@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
-import java.util.Iterator;
 import java.util.Scanner;
 
 public class Orders {
@@ -20,8 +19,7 @@ public class Orders {
                 System.out.println("1. Place New Order");
                 System.out.println("2. View Orders");
                 System.out.println("3. Cancel an Order");
-                System.out.println("4. Update an Existing Order");
-                System.out.println("5. Go back..");
+                System.out.println("4. Go back..");
                 
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
@@ -51,16 +49,8 @@ public class Orders {
                         }
                         break;
                     case 4:
-                        if (!conf.isTableEmpty("ORDERS")){
-                            System.out.println("\n\t\t=== Update Order ===\n");
-                            updateOrder();
-                        }else{
-                            System.out.println("Orders Table is Empty.");
-                        }
-                        break;
-                    case 5:
                         System.out.println("\nGoing back to Main Menu...");
-                        System.out.println("------------------------------------------------------------------");         
+                        System.out.println("------------------------------------------------------------------");  
                         break;
                     default:
                         System.out.println("Invalid Option.");
@@ -70,7 +60,7 @@ public class Orders {
                 scan.nextLine(); 
                 opt = -1; 
             }
-        } while (opt != 5);
+        } while (opt != 4);
     }
     
     public void placeOrder(){
@@ -196,19 +186,12 @@ public class Orders {
         conf.viewRecords(sql, columnHeaders, columnNames);
     }
 
-    private void cancelOrder() {
+    public void cancelOrder() {
         System.out.print("Order ID you want to Cancel: ");
         int id = scan.nextInt();
         
         conf.deleteRecord("ORDERS", id, true);
         conf.deleteRecord("ORDERDETAILS", id, false);
-    }
- 
-    private void updateOrder() {
-        String sql = "UPDATE ORDERS SET order_date = ? WHERE ID = 5";
-        String selectIdSql = "SELECT * FROM PRODUCTS WHERE ID = 5";
-        String[] columnNames = {"order_date"};
-        conf.updateRecord(sql, selectIdSql, columnNames, dateToday());
     }
     
     public String dateToday(){       
