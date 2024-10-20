@@ -23,20 +23,36 @@ public class Customers {
                 opt = scan.nextInt();
                 scan.nextLine(); 
 
+                boolean emptyTable = conf.isTableEmpty("CUSTOMERS");
                 switch (opt) {
                     case 1:  
-                        System.out.println("\n\t\t\t\t\t    === CUSTOMERS LIST ===\n");
+                        if (emptyTable) {
+                            System.out.println("Customers Table is Empty.");
+                            break;
+                        }
+                        System.out.printf("\n%64s\n", "=== CUSTOMERS LIST ===");
                         viewCustomers("SELECT * FROM CUSTOMERS");
                         break;
+
                     case 2:              
                         System.out.println("\n\t\t=== ADDING NEW CUSTOMER ===\n");
                         addCustomer();
                         break;
+
                     case 3:
+                        if (emptyTable) {
+                            System.out.println("Customers Table is Empty.");
+                            break;
+                        }
                         System.out.println("\n\t\t=== DELETING A CUSTOMER ===\n");
                         deleteCustomer();
                         break;
+
                     case 4:
+                        if (emptyTable) {
+                            System.out.println("Customers Table is Empty.");
+                            break;
+                        }
                         System.out.println("\n\t\t=== EDIT A CUSTOMER ===\n");
                         editCustomer();
                         break;
@@ -44,6 +60,7 @@ public class Customers {
                         System.out.println("\nGoing back to Main Menu...");
                         System.out.println("------------------------------------------------------------------");         
                         break;
+
                     default:
                         System.out.println("Invalid Option.");
                 }
@@ -69,7 +86,7 @@ public class Customers {
         conf.addRecord(sql, true, name, email, addr);
     }
 
-    private void viewCustomers(String query) {
+    public void viewCustomers(String query) {
         String[] headers = {"Customer ID", "Customer Name", "Email", "Address"};
         String[] columns = {"ID", "name", "email", "address"}; 
 
@@ -112,6 +129,6 @@ public class Customers {
         String[] columnNames = {"name", "email", "address"};
         String updateSql = "UPDATE CUSTOMERS SET name = ?, email = ?, address = ? WHERE id = ?";
         String selectIdSql = "SELECT * FROM CUSTOMERS WHERE ID = " + id;
-        conf.updateRecord(updateSql, selectIdSql, columnNames,  name, email, addr, id);
+        conf.updateRecord(updateSql, selectIdSql, columnNames, true, name, email, addr, id);
     }
 }

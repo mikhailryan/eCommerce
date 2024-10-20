@@ -1,5 +1,6 @@
-package ecommerce;
+package ecommerce; 
 
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -8,11 +9,14 @@ import java.util.Scanner;
 
 public class Orders {
     Scanner scan = new Scanner(System.in);
+    DecimalFormat df = new DecimalFormat("#.00");
+    
     Config conf = new Config();
+    Products prod = new Products();
     
     public void configOrders(){
+        
         int opt;
-
         do {    
             try {
                 System.out.println("\n\t=== Orders Menu ===\n");
@@ -30,9 +34,10 @@ public class Orders {
                         System.out.println("\n\t\t=== Place New Order ===\n");
                         placeOrder();
                         break;
+                        
                     case 2:
                         if (!conf.isTableEmpty("ORDERS")){
-                            System.out.println("\n\t\t\t\t     === Orders List ===\n");
+                            System.out.printf("\n%88s\n", "=== Orders List ===");
                             String query = "SELECT * FROM ORDERS";
                             viewOrders(query);
                             viewOrderDetails();
@@ -40,6 +45,7 @@ public class Orders {
                             System.out.println("Orders Table is Empty.");
                         }
                         break;
+                        
                     case 3:
                         if (!conf.isTableEmpty("ORDERS")){
                             System.out.println("\n\t\t=== Cancel Order ===\n");
@@ -48,10 +54,12 @@ public class Orders {
                             System.out.println("Orders Table is Empty.");
                         }
                         break;
+                        
                     case 4:
                         System.out.println("\nGoing back to Main Menu...");
                         System.out.println("------------------------------------------------------------------");  
                         break;
+                        
                     default:
                         System.out.println("Invalid Option.");
                 }
@@ -96,15 +104,22 @@ public class Orders {
                 if (resp.equalsIgnoreCase("done")) {
                     break;
                 }
+                
                 int productId = Integer.parseInt(resp);
                 if (!conf.doesIDExist("PRODUCTS", productId)){
                     System.out.println("Product ID doesn't exist.");
                     continue;
                 }
                 
+                int stocks = Integer.parseInt(conf.getDataFromID("PRODUCTS", productId, "p_stocks"));
+                if(stocks <= 0){
+                    System.out.println("Product ID: " + productId + " is currently out of stock.");
+                    continue;
+                }
+                
                 int qty = 0;
                 boolean validQuantity = false;  
-                while (!validQuantity) {
+                while (!validQuantity || (stocks - qty) < 0) {
                     try {
                         System.out.print("Quantity: ");
                         qty = scan.nextInt();
@@ -112,14 +127,27 @@ public class Orders {
                     } catch (InputMismatchException e) {
                         System.out.println("Error: Please enter a valid number for quantity.");
                         scan.next();
+                        validQuantity = false;
+                    }
+                    
+                    if (validQuantity && (stocks - qty) < 0) {
+                        System.out.println("Error: Only " + stocks + " units are available. Please enter a lower quantity.");
+                        validQuantity = false; 
                     }
                 }
                 
+                // Get them order details 
                 double price = Double.parseDouble(conf.getDataFromID("PRODUCTS", productId, "p_price"));
-                total += price * qty;
                 double lineTotal = price * qty;
+                total += price * qty;
+                orderDetails.add(new Object[]{productId, price, qty, lineTotal});
                 
-                orderDetails.add(new Object[]{productId, qty, lineTotal});
+                // Deduct stocks in DB... idk what im doing..
+                int updatedStocks = (stocks - qty);
+                String[] columnNames = {"p_stocks"};
+                String selectSql = "SELECT * FROM PRODUCTS WHERE ID = " + productId;
+                String updStocksSql = "UPDATE PRODUCTS SET p_stocks = ? WHERE ID = ?";
+                conf.updateRecord(updStocksSql, selectSql, columnNames, false, updatedStocks, productId);
 
             } catch (InputMismatchException e) {
                 System.out.println("Error: Please enter a valid number for quantity.");
@@ -128,23 +156,42 @@ public class Orders {
                 System.out.println("Error: Please enter a valid product ID.");
             } 
         } while (true);
-      
-        String addOrderSql = "INSERT INTO ORDERS (customer_id, order_date, total_amount) VALUES (?, ?, ?)";          
-        conf.addRecord(addOrderSql, false, cusId, dateToday(), total);    
+        
+        // Payment part...
+        System.out.println("\nTotal Amount Due: " + df.format(total));
+        double cash = 0;
+        do {
+            try {
+                System.out.print("Enter Payment Cash: ");
+                cash = scan.nextDouble();
+                if (cash < total) {
+                    System.out.println("Cash Insufficient.\n");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Please enter a valid number for cash.\n");
+                scan.next(); 
+                cash = 0; 
+            }
+        } while (cash < total);
+        double change = cash - total;
+        
+        
+        String addOrderSql = "INSERT INTO ORDERS (customer_id, order_date, total_amount, cash, change) VALUES (?, ?, ?, ?, ?)";          
+        conf.addRecord(addOrderSql, false, cusId, dateToday(), df.format(total), df.format(cash), df.format(change));    
         
         int orderId = conf.getID("SELECT * FROM ORDERS WHERE ROWID = (SELECT MAX(ROWID) FROM ORDERS);");
-        String addDetailsSql = "INSERT INTO ORDERDETAILS (ID, prod_id, quantity, line_total) VALUES (?, ?, ?, ?)";
+        String addDetailsSql = "INSERT INTO ORDERDETAILS (ID, prod_id, prod_price, quantity, line_total) VALUES (?, ?, ?, ?, ?)";
        
         orderDetails.stream().map((item) -> (Object[]) item).forEachOrdered((order) -> {
-            conf.addRecord(addDetailsSql, false, orderId, (int)order[0], (int)order[1], (double)order[2]);
+            conf.addRecord(addDetailsSql, false, orderId, (int)order[0], (double)order[1], (int)order[2], df.format((double)order[3]));
         });
         
         System.out.println("\nOrder Placed Successfully.");
     }
     
     public void viewOrders(String query){
-        String[] Headers = {"Order ID", "Customer ID", "Order Date", "Total Amount"};
-        String[] Columns = {"ID", "customer_id", "order_date", "total_amount"};
+        String[] Headers = {"Order ID", "Customer ID", "Order Date", "Total Amount", "Cash Paid", "Change"};
+        String[] Columns = {"ID", "customer_id", "order_date", "total_amount", "cash", "change"};
         
         conf.viewRecords(query, Headers, Columns);
     }
@@ -152,38 +199,46 @@ public class Orders {
     public void viewOrderDetails(){
         
         String resp;
-        int id;
-        boolean idExists;
-        
-        do{
-            System.out.print("\nEnter ID to see order details ('back' to go back): ");
-            resp = scan.next();
+        while(true){
             
-            if(resp.equalsIgnoreCase("back")){
-                System.out.println("Going back...");
-                return;
-            }
+            int id;
+            boolean idExists;
+
+            do{
+                System.out.print("\nEnter ID to see order details ('Q' to go back): ");
+                resp = scan.next();
+
+                if(resp.equalsIgnoreCase("q")){
+                    System.out.println("Going back...");
+                    return;
+                }
+
+                id = Integer.parseInt(resp);
+
+                idExists = conf.doesIDExist("ORDERS", id);
+                if(!idExists){
+                    System.out.println("Order ID Doesn't Exist.");
+                }
+            }while(!idExists);
+
+            int cusID = Integer.parseInt(conf.getDataFromID("ORDERS", id, "customer_id"));
+
+            System.out.println("");
+            System.out.println("Customer ID: " + conf.getDataFromID("CUSTOMERS", cusID, "ID"));
+            System.out.println("Customer Name: " + conf.getDataFromID("CUSTOMERS", cusID, "name"));
+            System.out.println("Total Amount: " + conf.getDataFromID("ORDERS", id, "total_amount"));
+
+            System.out.println("---------------------------------------------------------------------------------------------------------");
+            System.out.printf("\n%64s", "=== PRODUCTS ORDERED ===");
+            System.out.printf("\n%61s\n", "=== ORDER ID " + id + " ===");
+            String sql = "SELECT * FROM ORDERDETAILS WHERE id = " + id;
+            String columnHeaders[] = {"Product ID", "Product Price", "Quantity", "Line Total"};
+            String columnNames[] = {"prod_id", "prod_price", "quantity", "line_total"};
+
+            conf.viewRecords(sql, columnHeaders, columnNames);
+            System.out.println("\n---------------------------------------------------------------------------------------------------------");
             
-            id = Integer.parseInt(resp);
-            
-            idExists = conf.doesIDExist("ORDERS", id);
-            if(!idExists){
-                System.out.println("Order ID Doesn't Exist.");
-            }
-        }while(!idExists);
-        
-        int cusID = Integer.parseInt(conf.getDataFromID("ORDERS", id, "customer_id"));
-        
-        System.out.println("");
-        System.out.println("Customer Name: " + conf.getDataFromID("CUSTOMERS", cusID, "name"));
-        System.out.println("Email: " + conf.getDataFromID("CUSTOMERS", cusID, "email"));
-        System.out.println("Address: " + conf.getDataFromID("CUSTOMERS", cusID, "address") + "\n");
-        System.out.println("");
-        
-        String sql = "SELECT * FROM ORDERDETAILS WHERE id = " + id;
-        String columnHeaders[] = {"Product ID", "Quantity", "Line Total"};
-        String columnNames[] = {"prod_id", "quantity", "line_total"};
-        conf.viewRecords(sql, columnHeaders, columnNames);
+        }
     }
 
     public void cancelOrder() {
@@ -195,7 +250,7 @@ public class Orders {
     }
     
     public String dateToday(){       
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a");       
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM dd, yyyy");       
         return LocalDateTime.now().format(format);
     }
 }

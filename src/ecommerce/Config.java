@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Config {
+    
     public static Connection connectDB() {
         Connection con = null;
         try {
@@ -108,7 +111,7 @@ public class Config {
         }
     }
     
-    public void updateRecord(String updateSql, String selectIdSql, String[] columnNames, Object... values) {
+    public void updateRecord(String updateSql, String selectIdSql, String[] columnNames, boolean print, Object... values) {
         try (Connection con = connectDB();
             PreparedStatement pst = con.prepareStatement(selectIdSql);
             ResultSet rs = pst.executeQuery();) {
@@ -116,12 +119,10 @@ public class Config {
             ResultSetMetaData metaData = rs.getMetaData(); 
             PreparedStatement pstmt = con.prepareStatement(updateSql);
 
-            // Loop through the values and set them in the prepared statement dynamically
             for (int i = 0; i < values.length; i++) {
                 
                 Object newValue = values[i];
 
-                // If the input is "keep", retrieve the old value from the ResultSet
                 if (newValue instanceof String && newValue.equals("keep")) {
                     int columnType = metaData.getColumnType(i + 2); 
                     switch (columnType) {
@@ -159,8 +160,9 @@ public class Config {
             }
 
             pstmt.executeUpdate();
-            System.out.println("Record updated successfully!");
-            
+            if(print){
+                System.out.println("Record updated successfully!");
+            }
         } catch (SQLException e) {
             System.out.println("Error updating record: " + e.getMessage());
         }
@@ -262,5 +264,26 @@ public class Config {
         }
         
         return true;  
+    }
+    
+    public List<Integer> getOrderIdsByCustomerId(int customerId) {
+        List<Integer> orderIds = new ArrayList<>();
+        String query = "SELECT ID FROM ORDERS WHERE customer_id = ?";
+
+        try (Connection con = connectDB(); 
+             PreparedStatement pst = con.prepareStatement(query)) {
+            
+            pst.setInt(1, customerId);
+            ResultSet rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                orderIds.add(rs.getInt("ID")); 
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error retrieving order IDs: " + e.getMessage());
+        }
+
+        return orderIds; 
     }
 }

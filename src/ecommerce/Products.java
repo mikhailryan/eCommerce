@@ -13,8 +13,8 @@ public class Products {
         do {    
             try {
                 System.out.println("\n\t=== Product Management ===\n");
-                System.out.println("1. View All Products");
-                System.out.println("2. Add a Product");
+                System.out.println("1. Add a Product");
+                System.out.println("2. View All Products");
                 System.out.println("3. Delete a Product");
                 System.out.println("4. Edit a Product");
                 System.out.println("5. Go back..");
@@ -22,43 +22,50 @@ public class Products {
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
                 scan.nextLine(); 
-
+                
+                boolean emptyTable = conf.isTableEmpty("PRODUCTS");
                 switch (opt) {
                     case 1:  
-                        if (!conf.isTableEmpty("PRODUCTS")){
-                            System.out.println("\n\t\t\t\t   === PRODUCTS LIST ===\n");
-                            viewProducts("SELECT * FROM PRODUCTS");
-                        }else{
-                            System.out.println("Products Table is Empty.");
-                        }
-                        break;
-                    case 2:              
                         System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
                         addProduct(scan);
                         break;
+
+                    case 2:    
+                        if (emptyTable) {
+                            System.out.println("Products Table is Empty.");
+                            break;
+                        }
+                        System.out.printf("\n%63s\n\n", "=== PRODUCTS LIST ===");
+                        viewProducts("SELECT * FROM PRODUCTS");
+                        break;
+
                     case 3:
-                        if (!conf.isTableEmpty("PRODUCTS")){
-                            System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
-                            deleteProduct(scan);    
-                        }else{
+                        if (emptyTable) {
                             System.out.println("Products Table is Empty.");
+                            break;
                         }
+                        System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
+                        deleteProduct(scan);
                         break;
+
                     case 4:
-                        if (!conf.isTableEmpty("PRODUCTS")){
-                            System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
-                            editProduct(scan);
-                        }else{
+                        if (emptyTable) {
                             System.out.println("Products Table is Empty.");
+                            break;
                         }
+                        System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
+                        editProduct(scan);
                         break;
+
                     case 5:
                         System.out.println("\nGoing back to Main Menu...");
-                        System.out.println("------------------------------------------------------------------");         
+                        System.out.println("------------------------------------------------------------------");
                         break;
+
                     default:
                         System.out.println("Invalid Option.");
                 }
+
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
                 scan.nextLine(); 
@@ -100,54 +107,58 @@ public class Products {
         conf.deleteRecord("PRODUCTS", id, true);
     }
     
-    public void editProduct(Scanner scan){
+    public void editProduct(Scanner scan) {
         
-        int id;        
-        boolean idExists;
-        do{
-            System.out.print("Product ID you want to delete: ");
+        int id;
+        do {
+            System.out.print("Product ID you want to edit: ");
             id = scan.nextInt();
-            
-            idExists = conf.doesIDExist("PRODUCTS", id);
-            if(!idExists){
+            if (!conf.doesIDExist("PRODUCTS", id)) {
                 System.out.println("Product ID Doesn't Exist.\n");
             }
-        }while(!idExists);
-        scan.nextLine();
+        } while (!conf.doesIDExist("PRODUCTS", id));
+        scan.nextLine();  
+        
+        String updateSql = "UPDATE PRODUCTS SET p_name = ?, p_price = ?, p_stocks = ? WHERE id = ?";
+        String selectSql = "SELECT * FROM PRODUCTS WHERE ID = " + id;
         
         System.out.println("\nSelected Product:");
-        viewProducts("SELECT * FROM PRODUCTS WHERE ID = " + id);
-        
-        System.out.println("\nEnter Product Details:");
+        viewProducts(selectSql);
+
+        System.out.println("\nEnter Product Details (type 'keep' to retain current value):");
+
         System.out.print("New Product Name: ");
         String name = scan.nextLine();
-        
-        Object price = null;
-        Object stocks = null;
-        try {
-            System.out.print("New Price: ");
-            String tempPrice = scan.nextLine();
-            if(!tempPrice.equalsIgnoreCase("keep")){
-                price = Double.parseDouble(tempPrice);
-            }
-            
-            System.out.print("New Stocks: ");
-            String tempStocks = scan.nextLine();
-            if(!tempStocks.equalsIgnoreCase("keep")){
-                stocks = Integer.parseInt(tempStocks);
-            }
-            
-        }catch (NumberFormatException  e){
-            System.out.println("Error: " + e.getMessage());
-        }
-        System.out.println("");
+
+        System.out.print("New Price: ");
+        String tempPrice = scan.nextLine();
+        Object price = tempPrice.equalsIgnoreCase("keep") ? null : parseDouble(tempPrice);
+
+        System.out.print("New Stocks: ");
+        String tempStocks = scan.nextLine();
+        Object stocks = tempStocks.equalsIgnoreCase("keep") ? null : parseInteger(tempStocks);
         
         String[] columnNames = {"p_name", "p_price", "p_stocks"};
-        String updateSql = "UPDATE PRODUCTS SET p_name = ?, p_price = ?, p_stocks = ? WHERE id = ?";
-        String selectIdSql = "SELECT * FROM PRODUCTS WHERE ID = " + id;
-        conf.updateRecord(updateSql, selectIdSql, columnNames, name,
-                price != null ? price : "keep",
-                stocks != null ? stocks : "keep", id);    
-        
-    }  
+        conf.updateRecord(updateSql, selectSql, columnNames, true,
+                name, price != null ? price : "keep", stocks != null ? stocks : "keep", id);
+    }
+
+    private Double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input for price. Please enter a valid number.");
+            return null;
+        }
+    }
+
+    private Integer parseInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input for stocks. Please enter a valid number.");
+            return null;
+        }
+    }
+
 }
