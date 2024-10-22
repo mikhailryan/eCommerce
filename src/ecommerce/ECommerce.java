@@ -20,7 +20,7 @@ public class ECommerce {
                 System.out.println("1. Orders");
                 System.out.println("2. Products");
                 System.out.println("3. Customers");
-                System.out.println("4. Generate Receipts");
+                System.out.println("4. Generate Reports");
                 System.out.println("5. Exit");
                 
                 System.out.print("\nEnter Option: ");
@@ -50,7 +50,7 @@ public class ECommerce {
                         System.out.println("--------------------------------------------------------------------------------------------------");
                         break;
                     case 69:
-                        System.out.println("hehe nice\n");
+                        System.out.println("hehe nice");
                     default:
                         System.out.println("Invalid Option.");
                         System.out.println("--------------------------------------------------------------------------------------------------");

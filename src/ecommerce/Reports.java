@@ -8,6 +8,7 @@ public class Reports {
     Scanner scan = new Scanner(System.in);
     Config conf = new Config();
     Customers cus = new Customers();
+    Orders ord = new Orders();
     
     public void generateReports(){
         int opt;
@@ -15,9 +16,8 @@ public class Reports {
             try {
                 System.out.println("\n\t=== Reports ===\n");
                 System.out.println("1. Customer Purchased History Report");
-                System.out.println("2. Inventory Report");
-                System.out.println("3. Sales Report");
-                System.out.println("4. Go back..");
+                System.out.println("2. Sales Report");
+                System.out.println("3. Go back..");
 
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
@@ -29,14 +29,10 @@ public class Reports {
                         break;
 
                     case 2:              
-                        System.out.printf("\n%64s\n", "=== INVENTORY REPORT ===");
+                        salesReport();
                         break;
 
                     case 3:
-                        System.out.printf("\n%63s\n", "=== SALES REPORT ===");
-                        break;
-
-                    case 4:
                         System.out.println("\nGoing back to Main Menu...");
                         System.out.println("------------------------------------------------------------------");         
                         break;
@@ -124,7 +120,62 @@ public class Reports {
         System.out.println("\n\n===================================================================================================================================");
         System.out.println("\t\t\t\t\t       Total Amount Customer Spent: " + totalTotal);
         System.out.println("===================================================================================================================================\n\n");
-
         
+    }
+
+    private void salesReport() {
+        
+        System.out.printf("\n%88s\n", "=== Orders List ===");
+        ord.viewOrders("SELECT * FROM ORDERS");
+        
+        int orderID;
+        do {
+            System.out.print("Enter Order ID: ");
+            orderID = scan.nextInt();
+            if (!conf.doesIDExist("ORDERS", orderID)) {
+                System.out.println("Order ID Doesn't Exist.\n");
+            }
+        } while (!conf.doesIDExist("ORDERS", orderID));
+        scan.nextLine();
+        
+        System.out.println("\n\n===============================================================================\n");
+        System.out.printf("%46s\n\n", "R E C E I P T");
+        
+        
+        System.out.println("Order ID: " + orderID);
+        System.out.println("Order Date: " + conf.getDataFromID("ORDERS", orderID, "order_date"));
+        int cusID = Integer.parseInt(conf.getDataFromID("ORDERS", orderID, "customer_id"));
+        System.out.println("Customer Name: " + conf.getDataFromID("CUSTOMERS", cusID, "name"));
+        System.out.println("");
+
+        String query = "SELECT "
+                            + "P.p_name, OD.quantity, OD.prod_price "
+                        + "FROM "
+                            + "ORDERDETAILS OD "
+                        + "JOIN "
+                            + "PRODUCTS P ON OD.prod_id = P.ID "
+                        + "WHERE OD.ID = " + orderID;
+
+        String[] columnHeaders = {"Product Name", "Quantity", "Price"};
+        String[] columnNames = {"p_name", "quantity", "prod_price"};
+
+        conf.viewRecords(query, columnHeaders, columnNames);
+
+        double total = Double.parseDouble(conf.getDataFromID("ORDERS", orderID, "total_amount"));
+        String totalForm = String.format(" %-24.2f|", total);
+
+        double cash = Double.parseDouble(conf.getDataFromID("ORDERS", orderID, "cash"));
+        String cashForm = String.format(" %-24.2f|", cash);
+        
+        double change = Double.parseDouble(conf.getDataFromID("ORDERS", orderID, "change"));
+        String changeForm = String.format(" %-24.2f|", change);
+
+        System.out.println("| Total Amount:\t\t\t\t\t    |" + totalForm);
+        System.out.println("-------------------------------------------------------------------------------");
+        System.out.println("| Cash Payment:\t\t\t\t\t    |" + cashForm);
+        System.out.println("| Change:\t\t\t\t\t    |" + changeForm);
+        System.out.println("-------------------------------------------------------------------------------");
+        System.out.println("\n\n===============================================================================");
+
     }
 }
