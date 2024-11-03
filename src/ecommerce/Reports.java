@@ -15,8 +15,8 @@ public class Reports {
         do {    
             try {
                 System.out.println("\n\t=== Reports ===\n");
-                System.out.println("1. Customer Purchased History Report");
-                System.out.println("2. Sales Report");
+                System.out.println("1. Order History Report");
+                System.out.println("2. Receipts");
                 System.out.println("3. Go back..");
 
                 System.out.print("\nEnter Option: ");
@@ -45,7 +45,7 @@ public class Reports {
                 scan.nextLine(); 
                 opt = -1; 
             }
-        } while (opt != 4);
+        } while (opt != 3);
 
     }
 
@@ -139,7 +139,7 @@ public class Reports {
         scan.nextLine();
         
         System.out.println("\n\n===============================================================================\n");
-        System.out.printf("%46s\n\n", "R E C E I P T");
+        System.out.printf("%44s\n\n", "R E C E I P T");
         
         
         System.out.println("Order ID: " + orderID);

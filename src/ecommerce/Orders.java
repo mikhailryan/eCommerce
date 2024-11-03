@@ -212,9 +212,15 @@ public class Orders {
                     System.out.println("Going back...");
                     return;
                 }
-
-                id = Integer.parseInt(resp);
-
+                
+                id = 0;
+                try {
+                    id = Integer.parseInt(resp);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a valid number.");
+                    return;
+                }
+                
                 idExists = conf.doesIDExist("ORDERS", id);
                 if(!idExists){
                     System.out.println("Order ID Doesn't Exist.");
