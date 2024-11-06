@@ -14,7 +14,7 @@ public class Reports {
         int opt;
         do {    
             try {
-                System.out.println("\n\t=== Reports ===\n");
+                System.out.println("\n\t Reports \n");
                 System.out.println("1. Order History Report");
                 System.out.println("2. Receipts");
                 System.out.println("3. Go back..");
@@ -51,7 +51,7 @@ public class Reports {
 
     private void customerPurchasedHistory() {
         
-        System.out.printf("\n%64s\n\n", "=== CUSTOMERS LIST ===");
+        System.out.printf("\n%64s\n\n", "> CUSTOMERS LIST <");
         cus.viewCustomers("SELECT * FROM CUSTOMERS");
         
         int cusID;

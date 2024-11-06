@@ -19,15 +19,17 @@ public class Orders {
         int opt;
         do {    
             try {
-                System.out.println("\n\t=== Orders Menu ===\n");
+                System.out.println("\n\t Orders Menu \n");
                 System.out.println("1. Place New Order");
                 System.out.println("2. View Orders");
-                System.out.println("3. Cancel an Order");
-                System.out.println("4. Go back..");
+//                System.out.println("3. Cancel an Order");
+                System.out.println("3. Go back..");
                 
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
                 scan.nextLine(); 
+                
+                System.out.println("");
 
                 switch (opt) {
                     case 1:
@@ -46,16 +48,16 @@ public class Orders {
                         }
                         break;
                         
-                    case 3:
-                        if (!conf.isTableEmpty("ORDERS")){
-                            System.out.println("\n\t\t=== Cancel Order ===\n");
-                            cancelOrder();
-                        }else{
-                            System.out.println("Orders Table is Empty.");
-                        }
-                        break;
+//                    case 3:
+//                        if (!conf.isTableEmpty("ORDERS")){
+//                            System.out.println("\n\t\t=== Cancel Order ===\n");
+//                            cancelOrder();
+//                        }else{
+//                            System.out.println("Orders Table is Empty.");
+//                        }
+//                        break;
                         
-                    case 4:
+                    case 3:
                         System.out.println("\nGoing back to Main Menu...");
                         System.out.println("------------------------------------------------------------------");  
                         break;
@@ -68,13 +70,19 @@ public class Orders {
                 scan.nextLine(); 
                 opt = -1; 
             }
-        } while (opt != 4);
+        } while (opt != 3);
     }
     
     public void placeOrder(){
+        Customers cus = new Customers();
+        
         
         int cusId;        
         boolean idExists;
+        
+        System.out.printf("\n%64s\n", "> CUSTOMERS LIST <");
+        cus.viewCustomers("SELECT * FROM CUSTOMERS");
+        
         do{
             System.out.print("Customer ID: ");
             cusId = scan.nextInt();
@@ -93,7 +101,7 @@ public class Orders {
         String resp;
         double total = 0;
         ArrayList<Object> orderDetails = new ArrayList<>();
-         
+        
         do {
             try {
                 
