@@ -12,7 +12,7 @@ public class Customers {
 
         do {    
             try {
-                System.out.println("\n\t=== Customers ===\n");
+                System.out.println("\n\t Customers \n");
                 System.out.println("1. View All Customers");
                 System.out.println("2. Add a Customer");
                 System.out.println("3. Delete a Customer");
@@ -22,6 +22,8 @@ public class Customers {
                 System.out.print("\nEnter Option: ");
                 opt = scan.nextInt();
                 scan.nextLine(); 
+                
+                System.out.println("");
 
                 boolean emptyTable = conf.isTableEmpty("CUSTOMERS");
                 switch (opt) {
@@ -30,12 +32,11 @@ public class Customers {
                             System.out.println("Customers Table is Empty.");
                             break;
                         }
-                        System.out.printf("\n%64s\n", "=== CUSTOMERS LIST ===");
+                        System.out.printf("\n%61s\n", "> CUSTOMERS LIST <");
                         viewCustomers("SELECT * FROM CUSTOMERS");
                         break;
 
-                    case 2:              
-                        System.out.println("\n\t\t=== ADDING NEW CUSTOMER ===\n");
+                    case 2:
                         addCustomer();
                         break;
 
@@ -44,7 +45,6 @@ public class Customers {
                             System.out.println("Customers Table is Empty.");
                             break;
                         }
-                        System.out.println("\n\t\t=== DELETING A CUSTOMER ===\n");
                         deleteCustomer();
                         break;
 
@@ -53,7 +53,6 @@ public class Customers {
                             System.out.println("Customers Table is Empty.");
                             break;
                         }
-                        System.out.println("\n\t\t=== EDIT A CUSTOMER ===\n");
                         editCustomer();
                         break;
                     case 5:

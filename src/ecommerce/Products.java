@@ -12,7 +12,7 @@ public class Products {
 
         do {    
             try {
-                System.out.println("\n\t=== Product Management ===\n");
+                System.out.println("\n\t Product Management\n");
                 System.out.println("1. Add a Product");
                 System.out.println("2. View All Products");
                 System.out.println("3. Delete a Product");
@@ -23,10 +23,11 @@ public class Products {
                 opt = scan.nextInt();
                 scan.nextLine(); 
                 
+                System.out.println("");
+                
                 boolean emptyTable = conf.isTableEmpty("PRODUCTS");
                 switch (opt) {
-                    case 1:  
-                        System.out.println("\n\t\t=== ADDING NEW PRODUCT ===\n");
+                    case 1:
                         addProduct(scan);
                         break;
 
@@ -44,7 +45,6 @@ public class Products {
                             System.out.println("Products Table is Empty.");
                             break;
                         }
-                        System.out.println("\n\t\t=== DELETING A PRODUCT ===\n");
                         deleteProduct(scan);
                         break;
 
@@ -53,7 +53,6 @@ public class Products {
                             System.out.println("Products Table is Empty.");
                             break;
                         }
-                        System.out.println("\n\t\t=== EDIT A PRODUCT ===\n");
                         editProduct(scan);
                         break;
 

@@ -16,7 +16,7 @@ public class ECommerce {
         int opt;
         do {    
             try {
-                System.out.println("\n\t=== eCommerce Management System ===\n");
+                System.out.println("\n\t + eCommerce Management System +\n");
                 System.out.println("1. Orders");
                 System.out.println("2. Products");
                 System.out.println("3. Customers");
