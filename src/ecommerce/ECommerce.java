@@ -16,7 +16,7 @@ public class ECommerce {
         int opt;
         do {    
             try {
-                System.out.println("\n\t + eCommerce Management System +\n");
+                System.out.println("\n eCommerce Management System");
                 System.out.println("1. Orders");
                 System.out.println("2. Products");
                 System.out.println("3. Customers");
@@ -27,22 +27,20 @@ public class ECommerce {
                 opt = scan.nextInt();
                 scan.nextLine();
                 System.out.println("");
+
+                System.out.println("--------------------------------------------------------------------------------------------------");
                 
                 switch (opt) {
                     case 1:
-                        System.out.println("--------------------------------------------------------------------------------------------------");
                         ord.configOrders();
                         break; 
                     case 2:
-                        System.out.println("--------------------------------------------------------------------------------------------------");
                         prod.configProducts();  
                         break;
                     case 3:
-                        System.out.println("--------------------------------------------------------------------------------------------------");
                         cus.configCustomers();
                         break;
                     case 4:
-                        System.out.println("--------------------------------------------------------------------------------------------------");
                         rep.generateReports();
                         break;
                     case 5:

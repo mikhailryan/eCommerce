@@ -12,7 +12,7 @@ public class Products {
 
         do {    
             try {
-                System.out.println("\n\t Product Management\n");
+                System.out.println("\n Product Management");
                 System.out.println("1. Add a Product");
                 System.out.println("2. View All Products");
                 System.out.println("3. Delete a Product");
@@ -36,7 +36,7 @@ public class Products {
                             System.out.println("Products Table is Empty.");
                             break;
                         }
-                        System.out.printf("\n%63s\n\n", "=== PRODUCTS LIST ===");
+                        System.out.printf("\n%63s\n\n", "    PRODUCTS LIST    ");
                         viewProducts("SELECT * FROM PRODUCTS");
                         break;
 

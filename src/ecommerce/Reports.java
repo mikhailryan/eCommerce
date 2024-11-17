@@ -14,7 +14,7 @@ public class Reports {
         int opt;
         do {    
             try {
-                System.out.println("\n\t Reports \n");
+                System.out.println("\n Reports");
                 System.out.println("1. Order History Report");
                 System.out.println("2. Receipts");
                 System.out.println("3. Go back..");
@@ -64,7 +64,7 @@ public class Reports {
         } while (!conf.doesIDExist("CUSTOMERS", cusID));
         scan.nextLine();
         
-        System.out.printf("\n%83s", "=== CUSTOMER PURCHASED HISTORY ===");
+        System.out.printf("\n%83s", "    CUSTOMER PURCHASED HISTORY    ");
         System.out.println("\n\n===================================================================================================================================");
         System.out.println("\t\t\t\t\t\t     Customer: " + conf.getDataFromID("CUSTOMERS", cusID, "name"));
         System.out.println("\t\t\t\t\t\t     Email: " + conf.getDataFromID("CUSTOMERS", cusID, "email"));
@@ -125,7 +125,7 @@ public class Reports {
 
     private void salesReport() {
         
-        System.out.printf("\n%88s\n", "=== Orders List ===");
+        System.out.printf("\n%88s\n", "    Orders List    ");
         ord.viewOrders("SELECT * FROM ORDERS");
         
         int orderID;

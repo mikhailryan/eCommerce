@@ -19,7 +19,7 @@ public class Orders {
         int opt;
         do {    
             try {
-                System.out.println("\n\t Orders Menu \n");
+                System.out.println("\n Orders Menu");
                 System.out.println("1. Place New Order");
                 System.out.println("2. View Orders");
 //                System.out.println("3. Cancel an Order");
@@ -243,8 +243,8 @@ public class Orders {
             System.out.println("Total Amount: " + conf.getDataFromID("ORDERS", id, "total_amount"));
 
             System.out.println("---------------------------------------------------------------------------------------------------------");
-            System.out.printf("\n%64s", "=== PRODUCTS ORDERED ===");
-            System.out.printf("\n%61s\n", "=== ORDER ID " + id + " ===");
+            System.out.printf("\n%64s", "    PRODUCTS ORDERED    ");
+            System.out.printf("\n%61s\n", "    ORDER ID " + id + "    ");
             String sql = "SELECT * FROM ORDERDETAILS WHERE id = " + id;
             String columnHeaders[] = {"Product ID", "Product Price", "Quantity", "Line Total"};
             String columnNames[] = {"prod_id", "prod_price", "quantity", "line_total"};
